@@ -13,7 +13,7 @@ let rec ty2str ty = match ty with
   | Core.T_FUN (ty, ty') -> "(" ^ (ty2str ty) ^ "->" ^ (ty2str ty') ^ ")"
   | Core.T_VAR tv -> "'" ^ (tyvar2str tv)
 
-let rec pat2str pat = match pat with 
+let rec pat2str pat = match pat with
     Core.P_WILD -> "_"
   | Core.P_INT i -> string_of_int i
   | Core.P_BOOL b -> string_of_bool b
@@ -34,7 +34,7 @@ let rec exp2str exp = match exp with
   | Core.E_NEQ -> "<>"
   | Core.E_VID vid -> vid2str vid
   | Core.E_PAIR (expty, expty') -> "(" ^ (expty2str expty) ^ ", " ^ (expty2str expty') ^ ")"
-  | Core.E_LET (dec, expty) -> "let " ^ (dec2str dec) ^ " in " ^ (expty2str expty) ^ " end" 
+  | Core.E_LET (dec, expty) -> "let " ^ (dec2str dec) ^ " in " ^ (expty2str expty) ^ " end"
   | Core.E_APP (expty, expty') ->  "(" ^ (expty2str expty) ^ ") (" ^ (expty2str expty') ^ ")"
   | Core.E_FUN mlist -> "fn " ^ (String.concat " | " (List.map mrule2str mlist))
 and expty2str (Core.EXPTY (exp, ty)) = "(" ^ (exp2str exp) ^ " : " ^ (ty2str ty) ^ ")"
@@ -42,7 +42,7 @@ and expty2str (Core.EXPTY (exp, ty)) = "(" ^ (exp2str exp) ^ " : " ^ (ty2str ty)
 and dec2str dec = match dec with
     Core.D_VAL (patty, expty) -> "val " ^ (patty2str patty) ^ " = " ^ (expty2str expty)
   | Core.D_REC (patty, expty) -> "val rec " ^ (patty2str patty) ^ " = " ^ (expty2str expty)
-  | Core.D_DTYPE -> "datatype" 
+  | Core.D_DTYPE -> "datatype"
 
 and mrule2str (Core.M_RULE (patty, expty)) = (patty2str patty) ^ " => " ^ (expty2str expty)
 

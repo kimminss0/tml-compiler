@@ -2,7 +2,7 @@ exception AstValidateError
 
 (* vpat : Ast.pat -> Ast.pat *)
 let vpat pat =
-  let rec vpat' s pat = 
+  let rec vpat' s pat =
     match pat with
       Ast.P_WILD -> s
     | Ast.P_INT n -> s
@@ -14,11 +14,11 @@ let vpat pat =
     | Ast.P_TPAT (pat, _) -> vpat' s pat in
   let _ = vpat' Set_type.empty pat in
   pat
-    
+
 (* vconbind : Ast.conbinding list -> Ast.conbinding list *)
 let vconbind conbind =
-  let rec vconbind' s l = 
-    match l with 
+  let rec vconbind' s l =
+    match l with
       [] -> s
     | (Ast.CB_VID v) :: conbind -> if Set_type.mem v s then raise AstValidateError else vconbind' (Set_type.add v s) conbind
     | (Ast.CB_TVID (v, t)) :: conbind -> if Set_type.mem v s then raise AstValidateError else vconbind' (Set_type.add v s) conbind in
@@ -26,7 +26,7 @@ let vconbind conbind =
   conbind
 
 (* vexp : Ast.exp -> Ast.exp *)
-let rec vexp e = 
+let rec vexp e =
   (match e with
      Ast.E_INT n -> Ast.E_INT n
    | Ast.E_BOOL b -> Ast.E_BOOL b
@@ -44,7 +44,7 @@ let rec vexp e =
    | Ast.E_TEXP (exp, ty) -> Ast.E_TEXP (vexp exp, ty)
   )
 (* vdec : Ast.dec -> Ast.dec *)
-and vdec dec = 
+and vdec dec =
   (match dec with
      Ast.D_VAL (Ast.P_BOOL _, _) -> raise AstValidateError
    | Ast.D_VAL (pat, exp) -> (Ast.D_VAL (vpat pat, vexp exp))

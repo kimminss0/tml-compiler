@@ -2,7 +2,7 @@ type is =       (* identifier status *)
     VAR         (* VAR : variable *)
   | CON         (* CON : constructor with no argument *)
   | CONF        (* CONF : constructor with an argument *)
-      
+
 type avid = Ast.vid  (* = Ast.vid variable or data constructor *)
 type vid = avid * is (* variable or data constructor with status *)
 

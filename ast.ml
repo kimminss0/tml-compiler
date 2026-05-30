@@ -39,7 +39,7 @@ type exp =
   | E_LET of dec * exp      (* let dec in exp end *)
   | E_TEXP of exp * ty      (* (exp : ty) *)
 
- and mrule = 
+ and mrule =
    M_RULE of pat * exp      (* pat => exp *)
 
  and dec =

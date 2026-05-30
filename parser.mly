@@ -57,7 +57,7 @@ mlist:
 | mrule                     { [$1] }
 | mrule OR mlist            { [$1] @ $3 }
 
-dec: 
+dec:
 | LPAREN dec RPAREN         { $2 }
 | VAL pat EQ term           { Ast.D_VAL ($2, $4) }
 | VAL REC pat EQ term       { Ast.D_REC ($3, $5) }
@@ -89,9 +89,9 @@ appterm:
 
 aterm:
 | LPAREN term RPAREN                   { $2 }
-| LPAREN term COMMA term RPAREN        { Ast.E_PAIR ($2, $4) }                           
-| NUM                                  { Ast.E_INT $1 } 
-| TRUE                                 { Ast.E_BOOL $1 }                           
-| FALSE                                { Ast.E_BOOL $1 } 
-| EUNIT                                { Ast.E_UNIT } 
+| LPAREN term COMMA term RPAREN        { Ast.E_PAIR ($2, $4) }
+| NUM                                  { Ast.E_INT $1 }
+| TRUE                                 { Ast.E_BOOL $1 }
+| FALSE                                { Ast.E_BOOL $1 }
+| EUNIT                                { Ast.E_UNIT }
 | VAR                                  { Ast.E_VID $1 }

@@ -1,6 +1,6 @@
 type label = string
 
-type addr = 
+type addr =
     CADDR of label
   | HADDR of int
   | SADDR of int
@@ -15,8 +15,8 @@ type avalue =
 type reg = int
 let numReg = 32
 let (sp : reg) = 0
-let (bp : reg) = 1 
-let (cp : reg) = 2 
+let (bp : reg) = 1
+let (cp : reg) = 2
 let (ax : reg) = 3
 let (bx : reg) = 4
 let (cx : reg) = 5
@@ -44,8 +44,8 @@ let (r26 : reg) = 26
 let (r27 : reg) = 27
 let (r28 : reg) = 28
 let (r29 : reg) = 29
-let (tr : reg) = 30 
-let (zr : reg) = 31 
+let (tr : reg) = 30
+let (zr : reg) = 31
 
 type rvalue =
     INT of int
@@ -83,7 +83,7 @@ type instr =
   | CALL of rvalue
   | RETURN
   | HALT of rvalue
-  | EXCEPTION 
+  | EXCEPTION
   | DEBUG of string
 
 type code = instr list
@@ -111,18 +111,18 @@ type machine = {
 
 let caddrCurrent = ref 0
 
-let labelNew () = 
-  (caddrCurrent := !caddrCurrent + 1; 
+let labelNew () =
+  (caddrCurrent := !caddrCurrent + 1;
    string_of_int (!caddrCurrent))
 
-let labelNewStr s = 
-  (caddrCurrent := !caddrCurrent + 1; 
+let labelNewStr s =
+  (caddrCurrent := !caddrCurrent + 1;
    "L_" ^ s ^ (string_of_int (!caddrCurrent)))
 
-let labelNewLabel a s = 
-  (caddrCurrent := !caddrCurrent + 1; 
+let labelNewLabel a s =
+  (caddrCurrent := !caddrCurrent + 1;
    a ^ s ^ (string_of_int (!caddrCurrent)))
-    
+
 let code0 = []
 
 let clist il = il
@@ -137,7 +137,7 @@ let (@@) code code' = code @ code'
  * 2str functions
  *)
 
-let rec r2str r = match r with 
+let rec r2str r = match r with
     INT i -> string_of_int i
   |  BOOL b -> string_of_bool b
   |  UNIT -> "()"
@@ -174,13 +174,13 @@ let rec l2str l = match l with
 
 let instr2str instr = match instr with
     MOVE (l, r) -> "\tmove " ^ (l2str l) ^ " <- " ^ (r2str r)
-  | ADD (l, r1, r2) -> 
+  | ADD (l, r1, r2) ->
      "\tadd " ^ (l2str l) ^ " <- (" ^ (r2str r1) ^ ", " ^ (r2str r2) ^ ")"
-  | SUB (l, r1, r2) -> 
+  | SUB (l, r1, r2) ->
      "\tsub " ^ (l2str l) ^ " <- (" ^ (r2str r1) ^ ", " ^ (r2str r2) ^ ")"
-  | MUL (l, r1, r2) -> 
+  | MUL (l, r1, r2) ->
      "\tmul " ^ (l2str l) ^ " <- (" ^ (r2str r1) ^ ", " ^ (r2str r2) ^ ")"
-  | XOR (l, r1, r2) -> 
+  | XOR (l, r1, r2) ->
      "\txor " ^ (l2str l) ^ " <- (" ^ (r2str r1) ^ ", " ^ (r2str r2) ^ ")"
   | NOT (l, r) -> "\tnot " ^ (l2str l) ^ " <- " ^ (r2str r)
   | PUSH r -> "\tpush " ^ (r2str r)
@@ -189,11 +189,11 @@ let instr2str instr = match instr with
   | FREE r -> "\tfree " ^ (r2str r)
   | LABEL a -> a ^ ":"
   | JUMP r -> "\tjump " ^ (r2str r)
-  | JMPNEQ (r1, r2, r3) -> 
+  | JMPNEQ (r1, r2, r3) ->
      "\tjmpneq " ^ (r2str r1) ^ ", (" ^ (r2str r2) ^ ", " ^ (r2str r3) ^ ")"
-  | JMPNEQSTR (r1, r2, r3) -> 
+  | JMPNEQSTR (r1, r2, r3) ->
      "\tjmpneqstr " ^ (r2str r1) ^ ", (" ^ (r2str r2) ^ ", " ^ (r2str r3) ^ ")"
-  | JMPTRUE (r1, r2) -> 
+  | JMPTRUE (r1, r2) ->
      "\tjmptrue " ^ (r2str r1) ^ ", (" ^ (r2str r2) ^ ")"
   | CALL r -> "\tcall " ^ (r2str r)
   | RETURN -> "\treturn"
@@ -201,12 +201,12 @@ let instr2str instr = match instr with
   | EXCEPTION  -> "\texception"
   | DEBUG s -> "\t// " ^ s
 
-let rec code2str c = match c with 
+let rec code2str c = match c with
     [] -> ""
-  (* | (LABEL a)::tl -> (instr2str (LABEL a)) ^ (code2str tl) *) 
+  (* | (LABEL a)::tl -> (instr2str (LABEL a)) ^ (code2str tl) *)
   | c::tl -> (instr2str c) ^ "\n" ^  (code2str tl)
 
-let avalue2str av = match av with 
+let avalue2str av = match av with
     AINT i -> string_of_int i
   | ABOOL b -> string_of_bool b
   | AUNIT -> "()"
@@ -249,17 +249,17 @@ let costMemWrite = 10
 let costInstruction = costRegRead + costMemRead
 
 let stackSize = 1024 * 1024       (* stack size *)
-                         
+
 let createMachine code =
-  try 
+  try
     let register = Array.make numReg (AINT 0) in
-    let _ = register.(sp) <- AADDR (SADDR 0) in 
+    let _ = register.(sp) <- AADDR (SADDR 0) in
     let _ = register.(bp) <- AADDR (SADDR 0) in
     let _ = register.(zr) <- AINT 0 in
     let codem = Array.of_list code in
     let count_array = ref 0 in
     let coded = Array.fold_left
-                  (fun coded' instr' -> 
+                  (fun coded' instr' ->
                     let _ = count_array := !count_array+1 in
                     match instr' with
                       LABEL label' -> Dict.insert (label', !count_array-1) coded'
@@ -268,10 +268,10 @@ let createMachine code =
     let pc = ref (match Dict.lookup start_label coded with
                     Some v -> v
                   | _ -> raise CreateMachineError) in
-    let heapm = ref Dict.empty in 
-    let heaps = ref 0 in 
+    let heapm = ref Dict.empty in
+    let heaps = ref 0 in
     let stack = Array.make stackSize (AINT 0) in
-    let state = ref EXECUTION 
+    let state = ref EXECUTION
     in
     {register = register; codem = codem; coded = coded;
      pc = pc; heapm = heapm; heaps = heaps; stack = stack; state = state;
@@ -285,11 +285,11 @@ let createMachine code =
      countRegWrite = ref 0
     }
   with _ -> raise CreateMachineError
-                  
+
 let execute fprint
-            ({register = register; codem = codem; coded = coded; pc = pc; 
+            ({register = register; codem = codem; coded = coded; pc = pc;
               heapm = heapm; heaps = heaps; stack = stack; state = state;
-              maxStack = maxStack; 
+              maxStack = maxStack;
               maxHeap = maxHeap;
               countHeap = countHeap;
               countInstruction = countInstruction;
@@ -297,52 +297,52 @@ let execute fprint
               countMemWrite = countMemWrite;
               countRegRead = countRegRead;
               countRegWrite = countRegWrite
-            }) = 
+            }) =
 
   let addc c i = c := !c + i in
   let incc c = c := !c + 1 in
 
-  let readRegister r = 
+  let readRegister r =
     (try incc countRegRead;
          register.(r) with Invalid_argument "index out of bounds" -> raise RegisterAccessError) in
-  
-  let writeRegister r a = 
+
+  let writeRegister r a =
     (try register.(r) <- a with Invalid_argument "index out of bounds" -> raise InvalidRegisterError);
     incc countRegWrite in
-  
+
   let readHeap h os =
-    let (alive, mcell) = 
-      match Dict.lookup h (!heapm) with 
+    let (alive, mcell) =
+      match Dict.lookup h (!heapm) with
         Some v -> v
       | None -> raise InvalidHeapAccessError
     in
     (incc countMemRead;
      if !alive then
        try mcell.(os) with Invalid_argument "index out of bounds" -> raise HeapOffsetError
-     else 
-       raise FreedHeapAccessError) in  
+     else
+       raise FreedHeapAccessError) in
 
-  let writeHeap h os a = 
-    let (alive, mcell) = 
-      match Dict.lookup h (!heapm) with 
+  let writeHeap h os a =
+    let (alive, mcell) =
+      match Dict.lookup h (!heapm) with
         Some v -> v
       | None -> raise InvalidHeapAccessError
     in
     (if !alive then
        try mcell.(os) <- a with Invalid_argument "index out of bounds" -> raise HeapOffsetError
-     else 
+     else
        raise FreedHeapAccessError);
     incc countMemWrite in
 
   let readStack s =
     (incc countMemRead;
      if s > !maxStack then maxStack := s else ();
-     if s >= stackSize then raise StackOverflowError 
+     if s >= stackSize then raise StackOverflowError
      else if s < 0 then raise StackUnderflowError
      else try stack.(s) with Invalid_argument "index out of bounds" -> raise StackAccessError) in
-  
+
   let writeStack s a =
-    (if s >= stackSize then raise StackOverflowError 
+    (if s >= stackSize then raise StackOverflowError
      else if s < 0 then raise StackUnderflowError
      else try stack.(s) <- a with Invalid_argument "index out of bounds" -> raise StackAccessError);
     incc countMemWrite;
@@ -351,19 +351,19 @@ let execute fprint
   let showHeap () =
     (fprint "\n";
      Dict.fold
-       (fun () (a, (br, aa)) -> 
+       (fun () (a, (br, aa)) ->
         (List.iter fprint ["&Heap_"; string_of_int a; " ="];
          if !br then
-           Array.iteri (fun i av -> 
+           Array.iteri (fun i av ->
                         List.iter fprint [" ["; string_of_int i; "] = "; avalue2str av])
                        aa
-         else 
+         else
            fprint " <freed>";
          fprint "\n"))
        ()
        (!heapm)) in
 
-  let r2a r = match r with 
+  let r2a r = match r with
       INT i -> AINT i
     | BOOL b -> ABOOL b
     | UNIT -> AUNIT
@@ -381,18 +381,18 @@ let execute fprint
        | _ -> let _ = print_endline (r2str (REG r)^" : "^(avalue2str (readRegister r))^"\nCP : "^avalue2str (readRegister cp))
               (* let _ = showHeap () *)
               in raise REFREGTypeError in
-  
+
   let a2l a l = match l with
-      LREG r -> 
+      LREG r ->
       if r = sp then raise WriteSPError
       else if r = bp then raise WriteBPError
-      else if r = zr then () 
-      else writeRegister r a 
+      else if r = zr then ()
+      else writeRegister r a
     | LREFADDR (CADDR _, _) -> raise CodeWriteError
     | LREFADDR (HADDR h, os) -> writeHeap h os a
     | LREFADDR (SADDR s, os) -> writeStack (s + os) a
-    | LREFREG (r, os) -> 
-       match readRegister r with 
+    | LREFREG (r, os) ->
+       match readRegister r with
          AADDR (CADDR _) -> raise CodeWriteError
        | AADDR (HADDR h) -> writeHeap h os a
        | AADDR (SADDR s) -> writeStack (s + os) a
@@ -402,12 +402,12 @@ let execute fprint
   let setPC i = pc := i in
 
   let checkInt a1 a2 =
-    match a1 with 
+    match a1 with
       AINT i1 -> (match a2 with AINT i2 -> (i1, i2) | _ -> raise IntTypeError)
     | _ -> raise IntTypeError in
 
   let checkBool a1 a2 =
-    match a1 with 
+    match a1 with
       ABOOL b1 -> (match a2 with ABOOL b2 -> (b1, b2) | _ -> raise BoolTypeError)
     | _ -> raise BoolTypeError in
 
@@ -418,66 +418,66 @@ let execute fprint
     with _ -> raise NoLabelError in
 
   let checkStr a1 a2 =
-    match a1 with 
+    match a1 with
       ASTR s1 -> (match a2 with ASTR s2 -> (s1, s2) | _ -> raise StringTypeError)
     | _ -> raise StringTypeError in
 
-  let showStack st = 
+  let showStack st =
     (fprint "\n";
      fprint ("Stack(" ^ (string_of_int st) ^ ") = ");
-     Array.iteri (fun i a -> 
+     Array.iteri (fun i a ->
                   if i < st then
                     List.iter fprint ["["; string_of_int i; "] = "; avalue2str a; "/"]
-                  else 
+                  else
                     ()) stack;
      fprint "\n") in
-  
+
   let exe instr = match instr with
       MOVE (l, r) -> a2l (r2a r) l; incrPC ()
     | ADD (l, r1, r2) ->
        let (i1, i2) = checkInt (r2a r1) (r2a r2)
        in
-       a2l (AINT (i1 + i2)) l; 
+       a2l (AINT (i1 + i2)) l;
        incrPC ()
-              
+
     | SUB (l, r1, r2) ->
        let (i1, i2) = checkInt (r2a r1) (r2a r2)
        in
-       a2l (AINT (i1 - i2)) l; 
+       a2l (AINT (i1 - i2)) l;
        incrPC ()
-              
+
     | MUL (l, r1, r2) ->
        let (i1, i2) = checkInt (r2a r1) (r2a r2)
        in
-       a2l (AINT (i1 * i2)) l; 
+       a2l (AINT (i1 * i2)) l;
        incrPC ()
-              
+
     | XOR (l, r1, r2) ->
        let (b1, b2) = checkBool (r2a r1) (r2a r2)
        in
-       a2l (ABOOL ((b1 && not b2) || (not b1 && b2))) l; 
+       a2l (ABOOL ((b1 && not b2) || (not b1 && b2))) l;
        incrPC ()
-              
+
     | NOT (l, r) ->
        let (b, _) = checkBool (r2a r) (ABOOL true)
        in
-       a2l (ABOOL (not b)) l; 
+       a2l (ABOOL (not b)) l;
        incrPC ()
-              
-    | PUSH r -> 
+
+    | PUSH r ->
        let st = match readRegister sp with AADDR (SADDR i) -> i | _ -> raise Debug
        in
-       writeStack st (r2a r); 
-       writeRegister sp (AADDR (SADDR (st + 1))); 
+       writeStack st (r2a r);
+       writeRegister sp (AADDR (SADDR (st + 1)));
        incrPC ()
-              
+
     | POP l ->
        let st = match readRegister sp with AADDR (SADDR i) -> i | _ -> raise Debug
        in
-       writeRegister sp (AADDR (SADDR (st - 1))); 
+       writeRegister sp (AADDR (SADDR (st - 1)));
        a2l (readStack (st - 1)) l;
        incrPC ()
-              
+
     | MALLOC (l, r) ->
        let (size, _) = checkInt (r2a r) (AINT 0)
        in
@@ -487,22 +487,22 @@ let execute fprint
        addc countHeap size;
        if !countHeap > !maxHeap then maxHeap := !countHeap else ();
        incrPC ()
-              
+
     | FREE r ->
        let h = match (r2a r) with AADDR (HADDR ha) -> ha | _ -> raise FreeTypeError in
        let freeHeap h =
-         let (alive, mcell) = 
-           match Dict.lookup h (!heapm) with 
+         let (alive, mcell) =
+           match Dict.lookup h (!heapm) with
              Some v -> v
            | None -> raise InvalidHeapAccessError
          in
          if !alive then alive := false else raise DoubleFreeHeapError;
          addc countHeap (-(Array.length mcell))
-              
+
        in
        freeHeap h;
        incrPC ()
-              
+
     | LABEL _ -> incrPC (); addc countInstruction (-1)
     | JUMP r -> setPC (checkCodeAddr (r2a r))
     | JMPNEQ (r1, r2, r3) ->
@@ -511,21 +511,21 @@ let execute fprint
        in
        if i2 = i3 then incrPC ()
        else setPC i1
-                  
+
     | JMPNEQSTR (r1, r2, r3) ->
        let i1 = checkCodeAddr (r2a r1) in
        let (s2, s3) = checkStr (r2a r2) (r2a r3)
        in
        if s2 = s3 then incrPC ()
        else setPC i1
-                  
+
     | JMPTRUE (r1, r2) ->
        let i1 = checkCodeAddr (r2a r1) in
        let (b2, _) = checkBool (r2a r2) (ABOOL true)
        in
        if b2 then setPC i1
        else incrPC ()
-                   
+
     | CALL r ->
        let st = match readRegister sp with AADDR (SADDR i) -> i | _ -> raise Debug in
        let i = checkCodeAddr (r2a r)
@@ -535,7 +535,7 @@ let execute fprint
        writeRegister bp (AADDR (SADDR (st + 2)));
        writeRegister sp (AADDR (SADDR (st + 2)));
        setPC i
-             
+
     | RETURN ->
        let st = match readRegister sp with AADDR (SADDR i) -> i | _ -> raise Debug in
        (* let _ = showStack st *)
@@ -544,19 +544,19 @@ let execute fprint
        writeRegister sp (AADDR (SADDR (st - 2)));
        writeRegister bp (readStack (st - 2));
        setPC (i + 1)
-             
+
     | HALT r -> state := NORMAL (r2a r)
     | EXCEPTION -> state := ABNORMAL
     | DEBUG s -> incrPC (); addc countInstruction (-1) in
-  
-  let codeSize = Array.fold_left 
+
+  let codeSize = Array.fold_left
                    (fun c l -> match (l,c) with
                                  (LABEL _, cs) -> cs
                                | (DEBUG _, cs) -> cs
                                | (_, cs) -> cs + 1)
                    0 codem in
 
-  let showStatistics () = 
+  let showStatistics () =
     List.iter fprint ["\n"; "Execution statistics"; "\n"];
     List.iter fprint ["\tcode size = "; string_of_int codeSize; "\n"];
     List.iter fprint ["\tmax stack = "; string_of_int (!maxStack); "\n"];
@@ -566,18 +566,18 @@ let execute fprint
     List.iter fprint ["\tmemory write = "; string_of_int (!countMemWrite); "\n"];
     List.iter fprint ["\tregister read = "; string_of_int (!countRegRead); "\n"];
     List.iter fprint ["\tregister write = "; string_of_int (!countRegWrite); "\n"];
-    List.iter fprint ["Total time cost = "; 
+    List.iter fprint ["Total time cost = ";
                       string_of_int (
                           (!countMemRead) * costMemRead +
                             (!countMemWrite) * costMemWrite +
                             (!countRegRead) * costRegRead +
                             (!countRegWrite) * costRegWrite +
-                            (!countInstruction) * costInstruction); 
+                            (!countInstruction) * costInstruction);
                       "\n"];
-    List.iter fprint ["Total memory cost = "; 
+    List.iter fprint ["Total memory cost = ";
                       string_of_int ((!maxStack) + (!maxHeap) + codeSize); "\n"] in
 
-  let rec avalue2str a = match a with 
+  let rec avalue2str a = match a with
       AINT i -> string_of_int i
     | ABOOL b -> string_of_bool b
     | AUNIT -> "()"
@@ -600,23 +600,23 @@ let execute fprint
        if sa >= stackSize then raise StackOverflowError else
          if sa < 0 then raise StackUnderflowError else
            String.concat ""
-                         ["STACK_&"; string_of_int sa; ": ["; 
+                         ["STACK_&"; string_of_int sa; ": [";
                           avalue2str (stack.(sa));
                           "]"] in
-  
+
   let _ = List.iter fprint ["\n\nExecution begins at "; string_of_int (!pc); ":\n"] in
-  
-  let rec loop () = 
+
+  let rec loop () =
     let instr = codem.(!pc) in
     let _ = List.iter fprint [string_of_int (!pc); "   ";  instr2str instr; "\n"] in
-    
+
     let _ = exe instr in
     let _ = incc countInstruction in
-    
+
     match !state with
       EXECUTION -> loop ()
     | ABNORMAL -> (showStatistics () ;fprint "\nAbnormal termination\n"; None)
-    | NORMAL a -> 
+    | NORMAL a ->
        let st = match readRegister sp with AADDR (SADDR i) -> i | _ -> raise Debug in
        let _ = showStack st in
        let _ = showHeap () in
@@ -626,4 +626,4 @@ let execute fprint
        Some a
   in
   try loop () with _ -> List.iter fprint ["\nAbnormal execution"; "\n"]; None
-                                                                           
+

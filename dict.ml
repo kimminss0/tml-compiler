@@ -9,12 +9,12 @@ let empty = []
 (* val singleton : ('k * 'v) -> ('k, 'v) dict *)
 let singleton (k, v) = [(k, v)]
 
-(* lookup k d returns SOME v if d contains { k -> v } 
+(* lookup k d returns SOME v if d contains { k -> v }
    lookup k d returns NONE if not *)
 (* val lookup : 'k -> ('k, 'v) dict -> 'v option *)
 let rec lookup k d = match d with
     [] -> None
-  | (k', v')::d' -> if k = k' then Some v' else lookup k d' 
+  | (k', v')::d' -> if k = k' then Some v' else lookup k d'
 
 let delete k d = List.filter (fun (k', _) -> k <> k') d
 

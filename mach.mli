@@ -5,10 +5,10 @@ type label = string       (* code label *)
      or an index into the machine stack (SADDR). *)
 type addr =                 (* address *)
     CADDR of label          (* code address *)
-  | HADDR of int            (* heap address *)    
+  | HADDR of int            (* heap address *)
   | SADDR of int            (* stack address *)
 
-(* avalue is an atomic value; it is the content of a register or a memory 
+(* avalue is an atomic value; it is the content of a register or a memory
      cell. avalue takes a single memory cell or a single register. *)
 type avalue =               (* atomic value *)
     AINT of int             (* integer constant *)
@@ -21,20 +21,20 @@ type avalue =               (* atomic value *)
      either with its mnemonic or with its raw register index. valid raw
      register indices are thus from 0 to (numReg - 1).
 
-     SP (Stack Pointer), BP (Base Pointer), and ZR (Zero Registers) are 
+     SP (Stack Pointer), BP (Base Pointer), and ZR (Zero Registers) are
      special registers. both SP and BP store only stack addresses. SP is
      automatically updated by PUSH and POP instructions and points to the top
      of the machine stack, which is always empty. BP is automatically updated
      by CALL and RETURN instructions. both SP and BP can be read from, but
      cannot be written to. ZR holds a zero and never changes its value.
-     it takes no effects to write a avalue to ZR. 
+     it takes no effects to write a avalue to ZR.
 
-     all the other registers are functionally equivalent and can hold 
-     any avalue. 
-     
+     all the other registers are functionally equivalent and can hold
+     any avalue.
+
      there is a speical purpose register PC (program counter). PC stores
      the current execution point. PC cannot be used in instruction operands. *)
-type reg = int            (* register *)   
+type reg = int            (* register *)
 val numReg : int          (* number of registers *)
 val sp : reg              (* = 0 *)
 val bp : reg              (* = 1 *)
@@ -76,20 +76,20 @@ val zr : reg              (* = 31 *)
      the destination of a lvalue l with loc(l). *)
 
 type rvalue =               (* rvalue *)
-    INT of int              (* integer constant *)             
+    INT of int              (* integer constant *)
   | BOOL of bool            (* boolean constant *)
   | UNIT                    (* unit *)
   | STR of string           (* string constant *)
   | ADDR of addr            (* address *)
   | REG of reg              (* register *)
   | REFADDR of addr * int   (* dereferencing with address and offset *)
-    (* addr cannot be a code address. if addr is a heap address, int is the 
+    (* addr cannot be a code address. if addr is a heap address, int is the
        offset within the heap chunk associated with the heap address, and
-       it must be a non-negative interger less than the size of the heap 
-       chunk. if addr is a stack address, int is the offset from the stack 
+       it must be a non-negative interger less than the size of the heap
+       chunk. if addr is a stack address, int is the offset from the stack
        address within the machine stack, and it can be a negative integer. *)
   | REFREG of reg * int     (* dereferencing with register and offset *)
-    (* reg must hold an AADDR avalue. the same rule applies as in REFADDR in 
+    (* reg must hold an AADDR avalue. the same rule applies as in REFADDR in
        dereferencing. *)
 
 type lvalue =               (* lvalue *)
@@ -118,7 +118,7 @@ type state = EXECUTION | ABNORMAL | NORMAL of avalue
      val(r2) must be AINT avalues. SUB and MUL are defined in a similar way.
 
      XOR (l, r1, r2) moves 'val(r1) xor val(r2)' to loc(l). both val(r1) and
-     val(r2) must be ABOOL avalues. 
+     val(r2) must be ABOOL avalues.
 
      NOT (l, r) moves 'not val(r)' to loc(l). val(r) must be a ABOOL avalue.
 
@@ -131,7 +131,7 @@ type state = EXECUTION | ABNORMAL | NORMAL of avalue
      MALLOC (l, r) creates a new memory chunk of size val(r) in the machine
      heap, and moves its heap handle to loc(l). val(r) must be an AINT avalue.
 
-     FREE r frees the heap chunk associated with val(r). val(r) must be 
+     FREE r frees the heap chunk associated with val(r). val(r) must be
      an AADDR avalue, and it must also be a heap address.
 
      LABEL declares a new label. it take no memory cells.
@@ -140,23 +140,23 @@ type state = EXECUTION | ABNORMAL | NORMAL of avalue
      an AADDR avalue, and it must also be a code address.
 
      JMPNEQ (r1, r2, r3) jumps to the code address represented by val(r1) if
-     val(r2) is not equal to val(r3). val(r1) must be an AADDR avalue, and it 
+     val(r2) is not equal to val(r3). val(r1) must be an AADDR avalue, and it
      must be a code address. both val(r2) and val(r3) must be AINT avalues.
 
      JMPNEQSTR (r1, r2, r3) jumps to the code address represented by val(r1) if
-     val(r2) is not equal to val(r3). val(r1) must be an AADDR avalue, and it 
+     val(r2) is not equal to val(r3). val(r1) must be an AADDR avalue, and it
      must be a code address. both val(r2) and val(r3) must be ASTR avalues.
 
      JMPTRUE (r1, r2) jumps to the code address represented by val(r1) if
-     val(r2) is a (ABOOL true) avalue. val(r1) must be an AADDR avalue, and 
-     it must be a code address. val(r2) must be an ABOOL avalue. 
+     val(r2) is a (ABOOL true) avalue. val(r1) must be an AADDR avalue, and
+     it must be a code address. val(r2) must be an ABOOL avalue.
 
      CALL r pushs PC (the current execution point) onto the stack, pushes
-     val(REG BP), moves val(REG SP) to loc(LREF BP), and jumps to the code 
-     address represented by val(r). val(r) must an AADDR avalue, and it must 
-     be a code address. 
+     val(REG BP), moves val(REG SP) to loc(LREF BP), and jumps to the code
+     address represented by val(r). val(r) must an AADDR avalue, and it must
+     be a code address.
 
-     RETURN pops the stack onto loc(LREF BP), pops the stack onto PC, and 
+     RETURN pops the stack onto loc(LREF BP), pops the stack onto PC, and
      adjusts PC so that it points to the next instruction.
 
      HALT r changes the machine state to NORMAL with the execution result
@@ -184,11 +184,11 @@ type instr =
   | CALL of rvalue
   | RETURN
   | HALT of rvalue
-  | EXCEPTION 
+  | EXCEPTION
   | DEBUG of string
 
-(* code is a sequence of instructions to be executed by the machine. 
-     if there are multiple LABEL instructions with the same label, the 
+(* code is a sequence of instructions to be executed by the machine.
+     if there are multiple LABEL instructions with the same label, the
      last one counts and all the others are ignored. *)
 type code = instr list
 
@@ -199,7 +199,7 @@ val start_label : label
 (* labelNew () creates a new label.
    labelNewStr s creates a new label using s.
    labelNewLabel l s creates a new label using l and s. *)
-val labelNew : unit -> label 
+val labelNew : unit -> label
 val labelNewStr : string -> label
 val labelNewLabel : label -> string -> label
 
@@ -216,13 +216,13 @@ val cpost : code -> instr list -> code
 val (@@) : code -> code -> code
 
 (* abstract machine *)
-type machine 
+type machine
 
-(* createMachine c creates a new machine from code c. PC is set to the 
+(* createMachine c creates a new machine from code c. PC is set to the
      instruction containing START_LABEL. *)
 val createMachine : code -> machine
 (* execute f m executes the machine m until it terminates by executing
-     either HALT or EXCEPTION. The execution result is written to the 
+     either HALT or EXCEPTION. The execution result is written to the
      stream f. *)
 val execute : (string -> unit) -> machine -> avalue option
 

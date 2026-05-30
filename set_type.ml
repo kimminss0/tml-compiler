@@ -10,7 +10,7 @@ let empty = []
 (* val singleton : 'a -> 'a set *)
 let singleton e = [e]
 
-(* mem e s returns true if s contains e 
+(* mem e s returns true if s contains e
    mem e s returns false otherwise *)
 (* val mem : 'a -> 'a set -> bool *)
 let mem e s = List.mem e s

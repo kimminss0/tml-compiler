@@ -11,7 +11,7 @@ let rec ty2str ty = match ty with
   | Mono.T_PAIR (ty, ty') -> "(" ^ (ty2str ty) ^ ", " ^ (ty2str ty') ^ ")"
   | Mono.T_FUN (ty, ty') -> "(" ^ (ty2str ty) ^ "->" ^ (ty2str ty') ^ ")"
 
-let rec pat2str pat = match pat with 
+let rec pat2str pat = match pat with
     Mono.P_WILD -> "_"
   | Mono.P_INT i -> string_of_int i
   | Mono.P_BOOL b -> string_of_bool b
@@ -32,7 +32,7 @@ let rec exp2str exp = match exp with
   | Mono.E_NEQ -> "<>"
   | Mono.E_VID vid -> vid2str vid
   | Mono.E_PAIR (expty, expty') -> "(" ^ (expty2str expty) ^ ", " ^ (expty2str expty') ^ ")"
-  | Mono.E_LET (dec, expty) -> "let " ^ (dec2str dec) ^ " in " ^ (expty2str expty) ^ " end" 
+  | Mono.E_LET (dec, expty) -> "let " ^ (dec2str dec) ^ " in " ^ (expty2str expty) ^ " end"
   | Mono.E_APP (expty, expty') ->  "(" ^ (expty2str expty) ^ ") (" ^ (expty2str expty') ^ ")"
   | Mono.E_FUN mlist -> "fn " ^ (String.concat " | " (List.map mrule2str mlist))
 and expty2str (Mono.EXPTY (exp, ty)) = "(" ^ (exp2str exp) ^ " : " ^ (ty2str ty) ^ ")"
@@ -40,7 +40,7 @@ and expty2str (Mono.EXPTY (exp, ty)) = "(" ^ (exp2str exp) ^ " : " ^ (ty2str ty)
 and dec2str dec = match dec with
     Mono.D_VAL (patty, expty) -> "val " ^ (patty2str patty) ^ " = " ^ (expty2str expty)
   | Mono.D_REC (patty, expty) -> "val rec " ^ (patty2str patty) ^ " = " ^ (expty2str expty)
-  | Mono.D_DTYPE -> "datatype" 
+  | Mono.D_DTYPE -> "datatype"
 
 and mrule2str (Mono.M_RULE (patty, expty)) = (patty2str patty) ^ " => " ^ (expty2str expty)
 
