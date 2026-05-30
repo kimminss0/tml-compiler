@@ -36,8 +36,6 @@ _opam/
 
 .vscode
 
-!/typing.cmi
-!/typing.cmo
 hw7
 lexer.ml
 parser.ml

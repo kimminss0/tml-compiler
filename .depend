@@ -26,10 +26,10 @@ monomorphise.cmx : set_type.cmx mono.cmx dict.cmx core.cmx
 set_type.cmo :
 set_type.cmx :
 test.cmo : translate.cmo monomorphise.cmo mono_print.cmo mono.cmo mach.cmi \
-    inout.cmo core_print.cmo ast_valid.cmo ast_print.cmo
+    inout.cmo core_print.cmo ast_valid.cmo ast_print.cmo typing.cmo
 test.cmx : translate.cmx monomorphise.cmx mono_print.cmx mono.cmx mach.cmx \
-    inout.cmx core_print.cmx ast_valid.cmx ast_print.cmx
+    inout.cmx core_print.cmx ast_valid.cmx ast_print.cmx typing.cmx
 translate.cmo : mono.cmo mach.cmi dict.cmo
 translate.cmx : mono.cmx mach.cmx dict.cmx
-typing_stub.cmo :
-typing_stub.cmx :
+typing.cmo : ast.cmo core.cmo
+typing.cmx : ast.cmx core.cmx
