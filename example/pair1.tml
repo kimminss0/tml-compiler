@@ -1,0 +1,4 @@
+val x = 0;
+val a = let val x = 1 in (x,x) end;
+val b = (x, a);
+(4,b);;

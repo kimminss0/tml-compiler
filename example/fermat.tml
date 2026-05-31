@@ -1,0 +1,52 @@
+
+val isGreaterThan =
+  fn (x, y) =>
+    let
+      val d = x - y
+    in
+      let
+        val rec check =
+          fn (d1, d2) =>
+            (
+              fn true => false
+              | false =>
+                (
+                  fn true => true
+                  | false => ( check ) ((d1 + 1), (d2 - 1))
+                )
+                  (d2 = 0)
+            )
+              (d1 = 0)
+      in
+        ( check ) (d, d)
+      end
+    end ;
+
+val isGreaterThanOrEqualTo =
+  fn (x, y) =>
+    (
+      fn true => true
+       | false => (x = y)
+    )
+      ( isGreaterThan (x, y));
+
+val rec modd =
+  fn (x, y) =>
+    (
+      fn true => x
+       | false => ( modd ) ((x - y), y)
+    )
+      (isGreaterThan (y, x));
+
+val rec fermat =
+  fn (n, k) =>
+    let
+      val rec modpower =
+        fn (k, 0) => 1
+         | (k, m) =>
+          modd (k * (modpower (k, (m - 1))), n)
+    in
+      (modpower (k, n) = k)
+    end;
+
+fermat (11, 5);;

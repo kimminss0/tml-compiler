@@ -1,0 +1,5 @@
+val x = 0;
+val fun = fn x => (x,x);
+val a = fun 1;
+val b = (x, a);
+(4,b);;
