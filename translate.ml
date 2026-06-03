@@ -27,11 +27,6 @@ type env = venv * int
 
 let env0 : env = (venv0, 0)
 
-(* polyfill of List.init *)
-let init n f =
-  let rec init' n f l = if n > 0 then init' (n - 1) f (f (n - 1) :: l) else l in
-  init' n f []
-
 (* val loc2rvalue : loc -> Mach.code * rvalue *)
 let rec loc2rvalue l =
   match l with
@@ -526,7 +521,8 @@ let rec exp2code ((venv, count) as env : env) (saddr : label) exp =
                  MALLOC (LREG cx, INT (count' + count1));
                  MOVE (LREFREG (ax, 1), REG cx);
                ]
-               @ init count (fun n -> MOVE (LREFREG (cx, n), REFREG (cp, n)))
+               @ List.init count (fun n ->
+                   MOVE (LREFREG (cx, n), REFREG (cp, n)))
                @
                if count_incremented then [ MOVE (LREFREG (cx, count), REG bx) ]
                else [])
@@ -585,7 +581,7 @@ let rec exp2code ((venv, count) as env : env) (saddr : label) exp =
         let code_pre =
           clist
             ([ MOVE (LREG ax, REG cp); MALLOC (LREG cp, INT count1) ]
-            @ init count (fun n -> MOVE (LREFREG (cp, n), REFREG (ax, n)))
+            @ List.init count (fun n -> MOVE (LREFREG (cp, n), REFREG (ax, n)))
             @ [ PUSH (REG ax) ])
         and code_post =
           clist
