@@ -71,7 +71,7 @@ let rec subscheme (s : sub) ((tvs, ty) : tyscheme) : tyscheme =
         match Dict.lookup tv s with
         | Some _ -> (tvs, ty)
         | None -> subscheme s (tvs, ty)
-        (* ^^ assertion: ((Core.T_VAR tv) : Core.ty) is not in sub(dict of vid:ty)'s ty *)
+        (* ^^ assertion: no circular reference on sub *)
       in
       (tv :: tvs, ty)
 
@@ -150,7 +150,7 @@ let rec unify (ty : Core.ty) (ty' : Core.ty) : sub =
       let s = unify ty2 ty2' in
       let s' = unify (subty s ty1) (subty s ty1') in
       mergesub s' s
-  | Core.T_VAR tv, ty | ty, Core.T_VAR tv ->
+  | ty, Core.T_VAR tv | Core.T_VAR tv, ty ->
       if Set_type.mem tv (ftvOfty ty) then raise UnifyError
       else Dict.singleton (tv, ty)
   | _ -> raise UnifyError
@@ -200,7 +200,7 @@ let rec tpat ((ve, te) : env) (pat : Ast.pat) : venv * Core.patty =
       let ty = tty te ty in
       let ve', (Core.PATTY (_, ty') as patty) = tpat (ve, te) pat in
       let s = unify ty ty' in
-      (subvenv s ve', subpatty s patty)
+      (subvenv s ve', patty)
 
 let tconbinding (te : tenv) (tn : Core.tyname) (conbinding : Ast.conbinding) :
     env =
@@ -258,92 +258,80 @@ let rec texp (env : env) (exp : Ast.exp) : sub * Core.expty =
       let s, ty, mlist = tmatch env mlist in
       (s, Core.EXPTY (Core.E_FUN mlist, ty))
   | Ast.E_APP (exp1, exp2) ->
-      let s1, expty1 = texp env exp1 in
+      let s1, (Core.EXPTY (_, ty1) as expty1) = texp env exp1 in
       let env = subenv s1 env in
       let s2, (Core.EXPTY (_, ty2) as expty2) = texp env exp2 in
-      let (Core.EXPTY (_, ty1) as expty1) = subexpty s2 expty1 in
+      let ty1 = subty s2 ty1 in
       let tv = genTyvar () in
       let ty3 = Core.T_VAR tv in
       let s3 = unify ty1 (Core.T_FUN (ty2, ty3)) in
       ( mergesub s3 (mergesub s2 s1),
-        Core.EXPTY
-          (Core.E_APP (subexpty s3 expty1, subexpty s3 expty2), subty s3 ty3) )
+        Core.EXPTY (Core.E_APP (expty1, expty2), subty s3 ty3) )
   | Ast.E_PAIR (exp1, exp2) ->
-      let s1, expty1 = texp env exp1 in
+      let s1, (Core.EXPTY (_, ty1) as expty1) = texp env exp1 in
       let env = subenv s1 env in
       let s2, (Core.EXPTY (_, ty2) as expty2) = texp env exp2 in
-      let (Core.EXPTY (_, ty1) as expty1) = subexpty s2 expty1 in
+      let ty1 = subty s2 ty1 in
       ( mergesub s2 s1,
         Core.EXPTY (Core.E_PAIR (expty1, expty2), Core.T_PAIR (ty1, ty2)) )
   | Ast.E_LET (dec, exp) ->
       let s1, env, dec = tdec env dec in
       let s2, (Core.EXPTY (_, ty) as expty) = texp env exp in
-      let dec = subdec s2 dec in
       (mergesub s2 s1, Core.EXPTY (Core.E_LET (dec, expty), ty))
   | Ast.E_TEXP (exp, ty) ->
       let _, te = env in
       let ty = tty te ty in
       let s1, (Core.EXPTY (_, ty') as expty) = texp env exp in
       let s2 = unify ty ty' in
-      let expty = subexpty s2 expty in
       (mergesub s2 s1, expty)
 
 and tmatch ((ve, te) : env) (mlist : Ast.mrule list) :
     sub * Core.ty * Core.mrule list =
-  let s, ty, mlist_rev =
-    List.fold_left
-      (fun (s, ty, mlist_rev) (Ast.M_RULE (pat, exp)) ->
+  let s, l =
+    List.fold_left_map
+      (fun s (Ast.M_RULE (pat, exp)) ->
         let ve, te = subenv s (ve, te) in
-        let ve_pat, patty = tpat (ve, te) pat in
-        let s1, (Core.EXPTY (_, ty2) as expty) =
+        let ve_pat, (Core.PATTY (_, ty1) as patty) = tpat (ve, te) pat in
+        let s', (Core.EXPTY (_, ty2) as expty) =
           texp (mergevenv ve ve_pat, te) exp
         in
-        (* let ve = subvenv s1 ve in *)
-        let (Core.PATTY (_, ty1) as patty) = subpatty s1 patty in
-        let ty, s2 =
-          match ty with
-          | Some ty -> (ty, unify ty (Core.T_FUN (ty1, ty2)))
-          | None -> (Core.T_FUN (ty1, ty2), sub0)
-        in
-        let ty = subty s2 ty in
-        let patty = subpatty s2 patty in
-        let expty = subexpty s2 expty in
-        let s' = mergesub s2 s1 in
-        (* let ve_pat = subvenv s' ve_pat in
-        let ve_pat = closure (ftvOfvenv ve) ve_pat in *)
-        let mlist_rev = List.map (submrule s') mlist_rev in
-        (mergesub s' s, Some ty, Core.M_RULE (patty, expty) :: mlist_rev))
-      (sub0, None, []) mlist
+        let ty1 = subty s' ty1 in
+        (mergesub s' s, (Core.T_FUN (ty1, ty2), Core.M_RULE (patty, expty))))
+      sub0 mlist
   in
-  let ty =
-    match ty with Some ty -> ty | None -> failwith "should not match here"
-  in
-  (s, subty s ty, List.rev mlist_rev)
+  let tys, mlist = List.split l in
+  match tys with
+  | [] -> invalid_arg "tmatch: mlist must not be empty"
+  | ty :: tys ->
+      let s, ty =
+        List.fold_left
+          (fun (s, ty) ty' ->
+            let s' = unify ty ty' in
+            (mergesub s' s, subty s' ty))
+          (s, ty) tys
+      in
+      (s, ty, mlist)
 
 and tdec ((ve, te) : env) (dec : Ast.dec) : sub * env * Core.dec =
   match dec with
   | Ast.D_VAL (pat, exp) ->
-      let ve_pat, patty = tpat (ve, te) pat in
+      let ve_pat, (Core.PATTY (_, ty1) as patty) = tpat (ve, te) pat in
       let s1, (Core.EXPTY (_, ty2) as expty) = texp (ve, te) exp in
       let ve = subvenv s1 ve in
-      let (Core.PATTY (_, ty1) as patty) = subpatty s1 patty in
+      let ty1 = subty s1 ty1 in
       let s2 = unify ty1 ty2 in
-      let patty = subpatty s2 patty in
-      let expty = subexpty s2 expty in
       let s = mergesub s2 s1 in
       let ve_pat = subvenv s ve_pat in
       let ve_pat = closure (ftvOfvenv ve) ve_pat in
       (s, (mergevenv ve ve_pat, te), Core.D_VAL (patty, expty))
   | Ast.D_REC (pat, exp) ->
-      let ve_pat, patty = tpat (ve, te) pat in
+      let ve_pat, (Core.PATTY (_, ty1) as patty) = tpat (ve, te) pat in
       let s1, (Core.EXPTY (_, ty2) as expty) =
         texp (mergevenv ve ve_pat, te) exp
       in
       let ve = subvenv s1 ve in
-      let (Core.PATTY (_, ty1) as patty) = subpatty s1 patty in
+      let ty1 = subty s1 ty1 in
       let s2 = unify ty1 ty2 in
-      let patty = subpatty s2 patty in
-      let expty = subexpty s2 expty in
       let s = mergesub s2 s1 in
       let ve_pat = subvenv s ve_pat in
       let ve_pat = closure (ftvOfvenv ve) ve_pat in
@@ -358,14 +346,15 @@ and tdec ((ve, te) : env) (dec : Ast.dec) : sub * env * Core.dec =
 
 let tprogram ((dlist : Ast.dec list), (exp : Ast.exp)) :
     Core.dec list * Core.expty =
-  (* TODO: check if it's ok that s is unused at all *)
-  let (s, env), dlist =
+  let (s1, env), dlist =
     List.fold_left_map
       (fun (s, env) dec ->
         let s', env, dec = tdec env dec in
         ((mergesub s' s, env), dec))
       (sub0, env0) dlist
   in
-  let s', expty = texp env exp in
-  let dlist = List.map (subdec s') dlist in
+  let s2, expty = texp env exp in
+  let s = mergesub s2 s1 in
+  let dlist = List.map (subdec s) dlist in
+  let expty = subexpty s expty in
   (dlist, expty)
