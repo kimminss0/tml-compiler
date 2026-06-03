@@ -72,42 +72,7 @@ let vid2string = function
   | avid, CON -> avid ^ " (CON)"
   | avid, CONF -> avid ^ " (CONF)"
 
-let rec exp2str = function
-  | E_INT i -> "E_INT (" ^ string_of_int i ^ ")"
-  | E_BOOL b -> "E_BOOL (" ^ string_of_bool b ^ ")"
-  | E_UNIT -> "E_UNIT"
-  | E_PLUS -> "E_PLUS"
-  | E_MINUS -> "E_MINUS"
-  | E_MULT -> "E_MULT"
-  | E_EQ -> "E_EQ"
-  | E_NEQ -> "E_NEQ"
-  | E_VID vid -> "E_VID (" ^ vid2string vid ^ ")"
-  | E_FUN mrules -> "E_FUN " ^ String.concat " | " (List.map mrule2str mrules)
-  | E_APP (expty1, expty2) ->
-      "E_APP (" ^ expty2str expty1 ^ ", " ^ expty2str expty2 ^ ")"
-  | E_PAIR (expty1, expty2) ->
-      "E_PAIR (" ^ expty2str expty1 ^ ", " ^ expty2str expty2 ^ ")"
-  | E_LET (dec, expty) -> "E_LET"
-
-and expty2str (EXPTY (exp, _)) = exp2str exp
-
-and mrule2str (M_RULE (patty, expty)) =
-  patty2str patty ^ " => " ^ expty2str expty
-
-and patty2str (PATTY (pat, _)) = pat2str pat
-
-and pat2str = function
-  | P_WILD -> "P_WILD"
-  | P_INT i -> "P_INT (" ^ string_of_int i ^ ")"
-  | P_BOOL b -> "P_BOOL (" ^ string_of_bool b ^ ")"
-  | P_UNIT -> "P_UNIT"
-  | P_VID vid -> "P_VID (" ^ vid2string vid ^ ")"
-  | P_VIDP (vid, patty) ->
-      "P_VIDP (" ^ vid2string vid ^ ", " ^ patty2str patty ^ ")"
-  | P_PAIR (patty1, patty2) ->
-      "P_PAIR (" ^ patty2str patty1 ^ ", " ^ patty2str patty2 ^ ")"
-
-and venv2str venv =
+let venv2str venv =
   let venv_str =
     Dict.fold
       (fun acc (k, v) ->
@@ -116,7 +81,7 @@ and venv2str venv =
   in
   "ENV [" ^ venv_str ^ " ]"
 
-and env2str (venv, count) =
+let env2str (venv, count) =
   venv2str venv ^ " COUNT [" ^ string_of_int count ^ "]"
 
 let match_fail_label = labelNewStr "MATCH_FAILURE"
@@ -285,9 +250,12 @@ let rec pat2code saddr faddr l pat =
         ( cpre [ LABEL saddr ] (code1 @@ code2),
           (Dict.merge venv1 venv2, count1 + count2) ))
   |> fun (code, (venv, count)) ->
-  ( [ DEBUG ("PAT_START " ^ pat2str pat) ]
+  ( [ DEBUG ("PAT_START " ^ Mono_print.pat2str pat) ]
     @@ code
-    @@ [ DEBUG ("PAT_END   " ^ pat2str pat); DEBUG (env2str (venv, count)) ],
+    @@ [
+         DEBUG ("PAT_END   " ^ Mono_print.pat2str pat);
+         DEBUG (env2str (venv, count));
+       ],
     (venv, count) )
 
 (* patty2code : Mach.label -> Mach.label -> loc -> Mono.patty -> Mach.code * venv *)
@@ -592,9 +560,9 @@ let rec exp2code ((venv, count) as env : env) (saddr : label) exp =
         in
         (code_pre @@ code1 @@ code2 @@ code_post, REG ax))
   |> fun (code, rvalue) ->
-  ( [ DEBUG ("START " ^ exp2str exp); DEBUG (env2str env) ]
+  ( [ DEBUG ("START " ^ Mono_print.exp2str exp); DEBUG (env2str env) ]
     @@ code
-    @@ [ DEBUG ("END   " ^ exp2str exp) ],
+    @@ [ DEBUG ("END   " ^ Mono_print.exp2str exp) ],
     rvalue )
 
 (* expty2code : env -> Mach.label -> Mono.expty -> Mach.code * Mach.rvalue *)
