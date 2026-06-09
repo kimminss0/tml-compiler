@@ -11,6 +11,26 @@ For detailed information about this project, please refer to the assignment spec
 - Supports closures, higher-order and polymorphic functions, recursive functions, recursive datatypes, and pattern matching.
 - Implements Hindley-Milner type inference based on Algorithm W.
 
-## Setup
+## Sample TML Program
 
-OCaml version: `4.14.3`
+```sml
+datatype list = Nil | Cons of (int * list);
+
+val rec append =
+  fn Nil => (fn x => Cons (x, Nil))
+   | Cons (h, t) => (fn x => Cons (h, append t x));
+
+val rec reverse =
+  fn Nil => Nil
+   | Cons (h, t) => append (reverse t) h;
+
+val l = Cons (1, Cons (2, Nil));
+
+reverse l;;
+```
+
+Note that every TML program is also a valid SML program. You can test any SML program in your web browser at [sosml.org](https://sosml.org).
+
+## Build
+
+Required OCaml version: `4.14.3`
