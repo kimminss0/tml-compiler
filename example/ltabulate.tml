@@ -1,0 +1,14 @@
+datatype list = Nil | Cons of int * list;
+
+val ltabulate =
+    fn f => fn n =>
+    let val rec ltabulate_aux =
+        (fn f => fn acc => (fn 0 => Cons ((f 0), acc)
+        | n => ltabulate_aux f (Cons((f n), acc)) (n-1)))
+    in ltabulate_aux f Nil (n-1) end;
+
+val rec pow = fn x =>
+    fn 0 => 1
+    | n => x * (pow x (n-1));
+
+ltabulate (pow 2) 5;;

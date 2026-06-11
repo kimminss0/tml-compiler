@@ -1,0 +1,12 @@
+datatype list = Nil | Cons of int * list;
+
+val rec lfoldl =
+fn f => fn e =>
+(fn Nil => e
+| Cons (x, xs) => lfoldl f (f (x, e)) xs);
+
+val l = Cons (1, Cons (2, Cons (3, Cons(4, Nil))));
+
+val f = fn (x, y) => x + y;
+
+lfoldl f 3 l;;

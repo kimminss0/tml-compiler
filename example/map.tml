@@ -1,0 +1,12 @@
+datatype list = Nil | Cons of (int * list);
+
+val rec map =
+fn f => fn Nil => Nil
+| Cons (n, ls) => Cons (f n, map f ls);
+
+
+val l = Cons (1, Cons (2, Cons (3, Nil)));
+
+val f = fn x => x + 5;
+
+map f l;;

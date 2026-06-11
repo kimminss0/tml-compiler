@@ -1,0 +1,7 @@
+val sum = fn n =>
+    (let val rec aux = fn acc => (
+        fn 0 => acc
+        |  m => aux (acc + m) (m - 1)
+    )
+    in aux 0 n end);
+sum 3;;

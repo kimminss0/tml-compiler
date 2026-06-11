@@ -1,0 +1,5 @@
+val compose = fn f => fn g => g (fn x => f x);
+val fun_a = fn f => fn x => 2 + (f x);
+val fun_b = fn x => 3 * x;
+val inter = compose fun_b;
+inter fun_a 5;;

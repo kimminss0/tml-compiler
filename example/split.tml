@@ -1,0 +1,11 @@
+datatype list = Nil | Cons of (int * list);
+
+val rec split =
+fn Nil => (Nil, Nil)
+| Cons(n, Nil) => (Cons(n, Nil), Nil)
+| Cons(x, Cons(y, ls)) => let val (t1, t2) = split ls in (Cons(x, t1),
+Cons(y, t2)) end;
+
+
+val l = Cons (1, Cons (2, Cons (3, Cons (4, Nil))));
+split l;;

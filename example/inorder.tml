@@ -1,0 +1,11 @@
+datatype tree = Leaf of int | Node of tree * tree;
+datatype list = Nil | Cons of int * list;
+
+
+val inorder = fn t =>
+(let val rec inorder' = fn Leaf i => (fn post => Cons(i, post))
+| Node(l, r) => (fn post => inorder' l (inorder' r
+post))
+in inorder' t Nil end);
+
+inorder (Node((Node((Leaf 3), (Leaf 4))), (Node((Leaf 2), (Leaf 7)))));;

@@ -1,0 +1,11 @@
+datatype tree = Leaf of int | Node of tree * tree;
+
+val or = fn true => (fn _ => true) | _ => (fn true => true | _ => false);
+
+val rec binary_search =
+fn x => fn Leaf n => (n = x)
+| Node (t1, t2) => or (binary_search x t1) (binary_search x t2);
+
+
+binary_search 3 (Node((Node((Leaf 3), (Leaf 4))), (Node((Leaf 2), (Leaf
+5)))));;
