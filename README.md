@@ -8,8 +8,9 @@ For detailed information about this project, please refer to the assignment spec
 
 ## Key Features
 
-- Supports closures, higher-order and polymorphic functions, recursive functions, recursive datatypes, and pattern matching.
-- Implements Hindley-Milner type inference based on Algorithm W.
+- Hindley-Milner type system based on Algorithm W, featuring let-polymorphism.
+- Algebraic data types (ADTs) supporting recursive types and pattern matching.
+- Support for closures, higher-order functions, and recursive functions.
 
 ## Sample TML Program
 
